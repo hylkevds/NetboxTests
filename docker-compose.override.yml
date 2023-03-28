@@ -3,3 +3,32 @@ services:
   netbox:
     ports:
       - 8000:8080
+    user: "0:0" # root user, without it setup.py develop will not work
+    command: >
+      sh -c "cd /opt/netbox/plugins/plugin-findings
+      && /opt/netbox/venv/bin/python setup.py develop
+      && cd /opt/netbox/netbox
+      && /opt/netbox/docker-entrypoint.sh
+      && /opt/netbox/launch-netbox.sh"
+    volumes:
+    - ./plugins:/opt/netbox/plugins:z,rw
+
+  netbox-worker:
+    volumes:
+    - ./plugins:/opt/netbox/plugins:z,rw
+    user: "0:0" # root user, without it setup.py develop will not work
+    command: >
+      sh -c "cd /opt/netbox/plugins/plugin-findings
+      && /opt/netbox/venv/bin/python setup.py develop
+      && cd /opt/netbox/netbox
+      && /opt/netbox/venv/bin/python manage.py rqworker"
+
+  netbox-housekeeping:
+    volumes:
+    - ./plugins:/opt/netbox/plugins:z,rw
+    user: "0:0" # root user, without it setup.py develop will not work
+    command: >
+      sh -c "cd /opt/netbox/plugins/plugin-findings
+      && /opt/netbox/venv/bin/python setup.py develop
+      && cd /opt/netbox/netbox
+      && /opt/netbox/housekeeping.sh"
